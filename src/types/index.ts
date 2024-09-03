@@ -30,7 +30,10 @@ export interface Position {
 }
 
 // ボードのセルを表すタイプ
-export type Cell = Piece | null;
+export type Cell = {
+  piece: Piece | null; // マスに配置されているもの
+  isTerritory: Record<Player, boolean>; // プレイヤーの領地かどうか
+};
 
 // ボードを表すインターフェース
 export interface Board {

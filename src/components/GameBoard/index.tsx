@@ -15,7 +15,7 @@ const GameBoard: React.FC = () => {
   const handleCellClick = (row: number, col: number) => {
     if (game.status !== GameStatus.Playing) return;
 
-    const cell = game.board.cells[row][col];
+    const piece = game.board.cells[row][col].piece;
     const position = { row, col };
     const newGame = game.copy();
 
@@ -27,9 +27,9 @@ const GameBoard: React.FC = () => {
       newGame.selectedPiece = null;
       setGame(newGame);
     } else if (
-      cell &&
-      cell.player === game.currentPlayer &&
-      cell.type === PieceType.Piece
+      piece &&
+      piece.player === game.currentPlayer &&
+      piece.type === PieceType.Piece
     ) {
       // 他のコマを選択する
       newGame.selectedPiece = position;

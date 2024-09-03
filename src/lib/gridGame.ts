@@ -27,7 +27,7 @@ export class GridGame implements IGame {
   copy(): GridGame {
     return new GridGame(
       {
-        cells: this.board.cells.map((row) => [...row]),
+        cells: this.board.cells.map((row) => row.map((cell) => ({ ...cell }))),
       },
       this.currentPlayer,
       this.status,
@@ -42,7 +42,12 @@ export class GridGame implements IGame {
       {
         cells: Array(boardSize)
           .fill(null)
-          .map(() => Array(boardSize).fill(null)),
+          .map(() =>
+            Array(boardSize).fill({
+              piece: null,
+              isTerritory: { [Player.Player1]: false, [Player.Player2]: false },
+            })
+          ),
       },
       currentPlayer ?? Player.Player1,
       GameStatus.Playing,
@@ -55,15 +60,21 @@ export class GridGame implements IGame {
     const player1CastlePosition: Position = { row: 0, col: 4 };
     newGame.board.cells[player1CastlePosition.row][player1CastlePosition.col] =
       {
-        type: PieceType.Castle,
-        player: Player.Player1,
+        piece: {
+          type: PieceType.Castle,
+          player: Player.Player1,
+        },
+        isTerritory: { [Player.Player1]: true, [Player.Player2]: false },
       };
     for (const position of newGame.getSurroundingPositions(
       player1CastlePosition
     )) {
       newGame.board.cells[position.row][position.col] = {
-        type: PieceType.Piece,
-        player: Player.Player1,
+        piece: {
+          type: PieceType.Piece,
+          player: Player.Player1,
+        },
+        isTerritory: { [Player.Player1]: true, [Player.Player2]: false },
       };
     }
 
@@ -71,15 +82,21 @@ export class GridGame implements IGame {
     const player2CastlePosition: Position = { row: 8, col: 4 };
     newGame.board.cells[player2CastlePosition.row][player2CastlePosition.col] =
       {
-        type: PieceType.Castle,
-        player: Player.Player2,
+        piece: {
+          type: PieceType.Castle,
+          player: Player.Player2,
+        },
+        isTerritory: { [Player.Player1]: false, [Player.Player2]: true },
       };
     for (const position of newGame.getSurroundingPositions(
       player2CastlePosition
     )) {
       newGame.board.cells[position.row][position.col] = {
-        type: PieceType.Piece,
-        player: Player.Player2,
+        piece: {
+          type: PieceType.Piece,
+          player: Player.Player2,
+        },
+        isTerritory: { [Player.Player1]: false, [Player.Player2]: true },
       };
     }
 
@@ -122,7 +139,7 @@ export class GridGame implements IGame {
       [1, 1],
     ];
 
-    const currentPlayer = this.board.cells[row][col]?.player;
+    const currentPlayer = this.board.cells[row][col]?.piece?.player;
     if (!currentPlayer) return capturedPositions;
 
     directions.forEach(([dx, dy]) => {
@@ -132,9 +149,9 @@ export class GridGame implements IGame {
       const isDiagonal = dx !== 0 && dy !== 0;
 
       while (x >= 0 && x < this.boardSize && y >= 0 && y < this.boardSize) {
-        const cell = this.board.cells[x][y];
-        if (!cell) break;
-        if (cell.player === currentPlayer) {
+        const piece = this.board.cells[x][y].piece;
+        if (!piece) break;
+        if (piece.player === currentPlayer) {
           capturedPositions.push(...tempCaptured);
           break;
         }
@@ -150,18 +167,18 @@ export class GridGame implements IGame {
   isValidMove(from: Position, to: Position): boolean {
     if (Math.abs(from.row - to.row) > 1 || Math.abs(from.col - to.col) > 1)
       return false;
-    if (this.board.cells[to.row][to.col] !== null) return false;
+    if (this.board.cells[to.row][to.col].piece !== null) return false;
     return true;
   }
 
   movePiece(from: Position, to: Position): void {
-    const piece = this.board.cells[from.row][from.col];
-    this.board.cells[from.row][from.col] = null;
-    this.board.cells[to.row][to.col] = piece;
+    const piece = this.board.cells[from.row][from.col].piece;
+    this.board.cells[from.row][from.col].piece = null;
+    this.board.cells[to.row][to.col].piece = piece;
 
     const capturedPieces = this.getCapturedPositions(to);
     capturedPieces.forEach(({ row, col }) => {
-      this.board.cells[row][col] = null;
+      this.board.cells[row][col].piece = null;
     });
 
     this.currentPlayer =
