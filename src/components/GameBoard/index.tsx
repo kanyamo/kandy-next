@@ -49,7 +49,10 @@ const GameBoard: React.FC = () => {
           <AlertDescription>Game Status: {game.status}</AlertDescription>
         </Alert>
       </div>
-      <div className="grid grid-cols-9 gap-1 bg-gray-300 p-2">
+      <div
+        className="grid gap-1 bg-gray-300 p-2"
+        style={{ gridTemplateColumns: `repeat(${game.boardSize}, 1fr)` }}
+      >
         {game.board.cells.map((row, rowIndex) =>
           row.map((cell, colIndex) => (
             <CellComponent

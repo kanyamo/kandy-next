@@ -57,7 +57,10 @@ export class GridGame implements IGame {
     );
 
     // Player1の初期配置
-    const player1CastlePosition: Position = { row: 0, col: 4 };
+    const player1CastlePosition: Position = {
+      row: 1,
+      col: (boardSize - 1) / 2,
+    };
     newGame.board.cells[player1CastlePosition.row][player1CastlePosition.col] =
       {
         piece: {
@@ -67,7 +70,14 @@ export class GridGame implements IGame {
         isTerritory: { [Player.Player1]: true, [Player.Player2]: false },
       };
     for (const position of newGame.getSurroundingPositions(
-      player1CastlePosition
+      player1CastlePosition,
+      [
+        [1, 0],
+        [1, -1],
+        [1, 1],
+        [0, -1],
+        [0, 1],
+      ]
     )) {
       newGame.board.cells[position.row][position.col] = {
         piece: {
@@ -79,7 +89,10 @@ export class GridGame implements IGame {
     }
 
     // Player2の初期配置
-    const player2CastlePosition: Position = { row: 8, col: 4 };
+    const player2CastlePosition: Position = {
+      row: boardSize - 2,
+      col: (boardSize - 1) / 2,
+    };
     newGame.board.cells[player2CastlePosition.row][player2CastlePosition.col] =
       {
         piece: {
@@ -89,7 +102,14 @@ export class GridGame implements IGame {
         isTerritory: { [Player.Player1]: false, [Player.Player2]: true },
       };
     for (const position of newGame.getSurroundingPositions(
-      player2CastlePosition
+      player2CastlePosition,
+      [
+        [-1, 0],
+        [-1, -1],
+        [-1, 1],
+        [0, -1],
+        [0, 1],
+      ]
     )) {
       newGame.board.cells[position.row][position.col] = {
         piece: {
@@ -100,27 +120,74 @@ export class GridGame implements IGame {
       };
     }
 
+    // 壁の配置
+    // 外周に壁を配置
+    for (let i = 0; i < boardSize; i++) {
+      // 上辺
+      newGame.board.cells[0][i] = {
+        piece: {
+          type: PieceType.Wall,
+          player: null,
+        },
+        isTerritory: { [Player.Player1]: false, [Player.Player2]: false },
+      };
+      // 下辺
+      newGame.board.cells[boardSize - 1][i] = {
+        piece: {
+          type: PieceType.Wall,
+          player: null,
+        },
+        isTerritory: { [Player.Player1]: false, [Player.Player2]: false },
+      };
+      // 左辺
+      newGame.board.cells[i][0] = {
+        piece: {
+          type: PieceType.Wall,
+          player: null,
+        },
+        isTerritory: { [Player.Player1]: false, [Player.Player2]: false },
+      };
+      // 右辺
+      newGame.board.cells[i][boardSize - 1] = {
+        piece: {
+          type: PieceType.Wall,
+          player: null,
+        },
+        isTerritory: { [Player.Player1]: false, [Player.Player2]: false },
+      };
+    }
+
     return newGame;
   }
 
-  getSurroundingPositions(position: Position): Position[] {
+  getSurroundingPositions(
+    position: Position,
+    directions: number[][] = [
+      [-1, -1],
+      [-1, 0],
+      [-1, 1],
+      [0, -1],
+      [0, 1],
+      [1, -1],
+      [1, 0],
+      [1, 1],
+    ]
+  ): Position[] {
     const { row, col } = position;
     const positions: Position[] = [];
 
-    // 上下左右
-    if (row > 0) positions.push({ row: row - 1, col });
-    if (row < this.boardSize - 1) positions.push({ row: row + 1, col });
-    if (col > 0) positions.push({ row, col: col - 1 });
-    if (col < this.boardSize - 1) positions.push({ row, col: col + 1 });
-
-    // 斜め
-    if (row > 0 && col > 0) positions.push({ row: row - 1, col: col - 1 });
-    if (row > 0 && col < this.boardSize - 1)
-      positions.push({ row: row - 1, col: col + 1 });
-    if (row < this.boardSize - 1 && col > 0)
-      positions.push({ row: row + 1, col: col - 1 });
-    if (row < this.boardSize - 1 && col < this.boardSize - 1)
-      positions.push({ row: row + 1, col: col + 1 });
+    for (const [dx, dy] of directions) {
+      const newRow = row + dx;
+      const newCol = col + dy;
+      if (
+        newRow >= 0 &&
+        newRow < this.boardSize &&
+        newCol >= 0 &&
+        newCol < this.boardSize
+      ) {
+        positions.push({ row: newRow, col: newCol });
+      }
+    }
 
     return positions;
   }
@@ -151,7 +218,12 @@ export class GridGame implements IGame {
       while (x >= 0 && x < this.boardSize && y >= 0 && y < this.boardSize) {
         const piece = this.board.cells[x][y].piece;
         if (!piece) break;
-        if (piece.player === currentPlayer) {
+        // 同じプレイヤーのコマまたは城が見つかった場合、その間のコマを取得する
+        // 斜め方向でなければ、壁でも取得する
+        if (
+          piece.player === currentPlayer ||
+          (!isDiagonal && piece.type === PieceType.Wall)
+        ) {
           capturedPositions.push(...tempCaptured);
           break;
         }

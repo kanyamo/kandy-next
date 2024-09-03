@@ -20,6 +20,10 @@ const CellComponent: React.FC<CellProps> = ({
   let bgColor: string;
 
   switch (cell?.piece?.type) {
+    case PieceType.Wall:
+      content = "🧱";
+      bgColor = "bg-gray-400";
+      break;
     case PieceType.Castle:
       content = "🏰";
       bgColor =
