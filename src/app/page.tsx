@@ -3,10 +3,10 @@ import GameBoard from "@/components/GameBoard";
 
 const Home: React.FC = () => {
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
+    <main className="p-4 h-svh w-full">
       <GameBoard />
     </main>
   );
-}
+};
 
 export default Home;

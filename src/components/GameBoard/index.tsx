@@ -38,7 +38,7 @@ const GameBoard: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
+    <div className="flex flex-col items-center justify-center h-full w-full bg-gray-100">
       <div className="mb-4">
         <Alert>
           <AlertCircle className="h-4 w-4" />
@@ -54,25 +54,27 @@ const GameBoard: React.FC = () => {
           <AlertDescription>ステータス: {game.status}</AlertDescription>
         </Alert>
       </div>
-      <div
-        className="grid gap-1 bg-gray-300 p-2"
-        style={{ gridTemplateColumns: `repeat(${game.boardSize}, 1fr)` }}
-      >
-        {game.board.cells.map((row, rowIndex) =>
-          row.map((cell, colIndex) => (
-            <CellComponent
-              key={`${rowIndex}-${colIndex}`}
-              cell={cell}
-              rowIndex={rowIndex}
-              colIndex={colIndex}
-              isSelected={
-                game.selectedPiece?.row === rowIndex &&
-                game.selectedPiece?.col === colIndex
-              }
-              onClick={() => handleCellClick(rowIndex, colIndex)}
-            />
-          ))
-        )}
+      <div className="w-full max-w-[90vmin] aspect-square">
+        <div
+          className="grid gap-1 bg-gray-300 p-2 w-full h-full"
+          style={{ gridTemplateColumns: `repeat(${game.boardSize}, 1fr)` }}
+        >
+          {game.board.cells.map((row, rowIndex) =>
+            row.map((cell, colIndex) => (
+              <CellComponent
+                key={`${rowIndex}-${colIndex}`}
+                cell={cell}
+                rowIndex={rowIndex}
+                colIndex={colIndex}
+                isSelected={
+                  game.selectedPiece?.row === rowIndex &&
+                  game.selectedPiece?.col === colIndex
+                }
+                onClick={() => handleCellClick(rowIndex, colIndex)}
+              />
+            ))
+          )}
+        </div>
       </div>
     </div>
   );

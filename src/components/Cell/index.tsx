@@ -44,7 +44,7 @@ const CellComponent: React.FC<CellProps> = ({
 
   return (
     <div
-      className={`w-12 h-12 flex items-center justify-center cursor-pointer bg-white
+      className={`aspect-square flex items-center justify-center cursor-pointer bg-white
         ${
           isSelected
             ? "border-4 border-yellow-400"
@@ -57,7 +57,7 @@ const CellComponent: React.FC<CellProps> = ({
     >
       {cell && (
         <div
-          className={`w-full h-full flex items-center justify-center ${bgColor}`}
+          className={`h-full w-full flex items-center justify-center ${bgColor}`}
         >
           {content}
         </div>
