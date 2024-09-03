@@ -1,4 +1,5 @@
 import { Board, Player, GameStatus, Position, IGame, PieceType } from "@/types";
+import { getOpponent } from "./utils";
 
 export class GridGame implements IGame {
   board: Board;
@@ -218,18 +219,23 @@ export class GridGame implements IGame {
       while (x >= 0 && x < this.boardSize && y >= 0 && y < this.boardSize) {
         const piece = this.board.cells[x][y].piece;
         if (!piece) break;
+        // 相手のコマが見つかった場合、さらに先を探索する
+        if (piece.type === PieceType.Piece && piece.player !== currentPlayer) {
+          tempCaptured.push({ row: x, col: y });
+          x += dx;
+          y += dy;
+          continue;
+        }
         // 同じプレイヤーのコマまたは城が見つかった場合、その間のコマを取得する
         // 斜め方向でなければ、壁でも取得する
-        if (
+        else if (
           piece.player === currentPlayer ||
           (!isDiagonal && piece.type === PieceType.Wall)
         ) {
           capturedPositions.push(...tempCaptured);
           break;
         }
-        tempCaptured.push({ row: x, col: y });
-        x += dx;
-        y += dy;
+        break;
       }
     });
 
@@ -253,13 +259,28 @@ export class GridGame implements IGame {
       this.board.cells[row][col].piece = null;
     });
 
-    this.currentPlayer =
-      this.currentPlayer === Player.Player1 ? Player.Player2 : Player.Player1;
-
     this.checkWinCondition();
+    this.currentPlayer = getOpponent(this.currentPlayer);
   }
 
   checkWinCondition(): void {
-    // ここに勝利条件の判定処理を実装
+    // 勝利条件を満たした場合、this.statusにGameStatus.Finishedを設定し、this.winnerに勝者を設定する
+    // 勝利条件: 相手の陣地に3つ以上のコマを配置した場合、または相手のコマを1つ以下にした場合
+    const opponent = getOpponent(this.currentPlayer);
+    const pieceInOpponentTerritoryCount = this.board.cells
+      .flat()
+      .filter((cell) => cell.isTerritory[opponent])
+      .filter((cell) => cell.piece?.player === this.currentPlayer).length;
+    const pieceCount = this.board.cells
+      .flat()
+      .filter(
+        (cell) =>
+          cell.piece?.player === opponent && cell.piece.type === PieceType.Piece
+      ).length;
+
+    if (pieceInOpponentTerritoryCount >= 3 || pieceCount <= 1) {
+      this.status = GameStatus.Finished;
+      this.winner = this.currentPlayer;
+    }
   }
 }

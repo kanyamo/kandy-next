@@ -43,10 +43,15 @@ const GameBoard: React.FC = () => {
         <Alert>
           <AlertCircle className="h-4 w-4" />
           <AlertTitle>
-            Current Player:{" "}
-            {game.currentPlayer === Player.Player1 ? "Player 1" : "Player 2"}
+            {game.winner
+              ? `Player ${game.winner === Player.Player1 ? "1" : "2"}の勝利`
+              : `現在の手番: ${
+                  game.currentPlayer === Player.Player1
+                    ? "Player 1"
+                    : "Player 2"
+                }`}
           </AlertTitle>
-          <AlertDescription>Game Status: {game.status}</AlertDescription>
+          <AlertDescription>ステータス: {game.status}</AlertDescription>
         </Alert>
       </div>
       <div
